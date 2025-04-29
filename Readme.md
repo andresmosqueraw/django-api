@@ -8,6 +8,7 @@ pip install djangorestframework
 django-admin startproject server .
 python manage.py migrate
 python manage.py runserver 0.0.0.0:8081
+nohup python manage.py runserver 0.0.0.0:8081 &
 
 agregar:
 
