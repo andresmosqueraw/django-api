@@ -1,0 +1,33 @@
+Register
+
+curl -X POST http://localhost:8081/register \
+-H "Content-Type: application/json" \
+-d '{
+    "username": "marcos",
+    "password": "123",
+    "email": "carlos@example.com",
+    "municipios": "CUITIVA, IZA, CUITIVA"
+}'
+
+
+Login
+
+curl -X POST http://localhost:8081/login \
+-H "Content-Type: application/json" \
+-d '{
+    "username": "marcos",
+    "password": "123",
+    "municipio": "CUITIVA"
+}'
+
+
+Profile
+
+curl -X POST http://localhost:8081/profile \
+-H "Content-Type: application/json" \
+-H "Authorization: Token c779b0216d706fd3816e598fc896afc8e0fc297b" \
+-d '{
+    "username": "user123",
+    "password": "test123"
+}'
+

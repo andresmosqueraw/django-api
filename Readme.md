@@ -1,11 +1,13 @@
 crear entorno virtual
 
 python -m venv venv
+source venv/bin/activate
 
 pip install django
-django-admin startproject server .
-python manage.py runserver
 pip install djangorestframework
+django-admin startproject server .
+python manage.py migrate
+python manage.py runserver 0.0.0.0:8081
 
 agregar:
 
