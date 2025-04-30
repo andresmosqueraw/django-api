@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432" # HOST:CONTENEDOR
+
+  web:
+    build: .
+    volumes:
+      - .:/app           # hot-reload en desarrollo
+    env_file:
+      - .env
+    ports:
+      - "8081:8081"      # localhost:8080 → contenedor:8000
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

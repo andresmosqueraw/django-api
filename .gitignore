@@ -1,4 +1,5 @@
 nohup.out
+/staticfiles/
 
 ### Django ###
 *.log

@@ -1,2 +1,4 @@
-django
+Django>=5.2,<6
 djangorestframework
+psycopg2-binary          # ← cliente PostgreSQL
+gunicorn                 # servidor WSGI de producción
