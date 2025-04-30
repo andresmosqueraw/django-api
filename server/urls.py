@@ -3,8 +3,9 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    re_path(r'^login$', views.login),
-    re_path(r'^register$', views.register),
-    re_path(r'^profile$', views.profile),
+    path("admin/", admin.site.urls),
+    re_path(r"^login$",    views.login),
+    re_path(r"^register$", views.register),
+    re_path(r"^commondata$", views.commondata),
+    re_path(r"^commondata/create$",    views.commondata_create),
 ]

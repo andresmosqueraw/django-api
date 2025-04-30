@@ -1,75 +1,93 @@
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
-from .serializers import UserSerializer
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework import status
+from .serializers import UserSerializer
+from django.db.models import Q
+from .models import CommonData
+from .serializers import CommonDataSerializer
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
-
-@api_view(['POST'])
-def login(request):
-    """
-    Maneja el login del usuario validando username, contraseña y municipio.
-    """
-    username = request.data.get('username')
-    password = request.data.get('password')
-    municipio = request.data.get('municipio', '').upper()  # Normaliza a mayúsculas
-
-    # Se obtiene el usuario o retorna error si no existe
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
-    
-    # Validar la contraseña
-    if not user.check_password(password):
-        return Response({"error": "Credenciales inválidas"}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Se obtiene la lista de municipios permitidos registrados en el perfil del usuario
-    try:
-        allowed_municipios = user.profile.get_municipios_list()
-    except Exception:
-        return Response(
-            {"error": "Perfil de usuario no configurado correctamente."},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-    
-    # Verificar si el municipio enviado se encuentra en la lista permitida
-    if municipio not in allowed_municipios:
-        return Response(
-            {"error": "El usuario no tiene acceso a este municipio."},
-            status=status.HTTP_403_FORBIDDEN
-        )
-    
-    # Se genera o recupera el token de autenticación
-    token, created = Token.objects.get_or_create(user=user)
-    serializer = UserSerializer(instance=user)
-    return Response({'token': token.key, "user": serializer.data}, status=status.HTTP_200_OK)
+from server.authentication import MultiTokenAuthentication
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 def register(request):
     """
-    Registra un nuevo usuario y configura el perfil con la cadena de municipios (si se envía).
+    Create a user with: username, password, first_name, last_name, email,
+    municipios (list[str]), permissions (list[str]).
+    Returns: token + full user data.
     """
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        user = User.objects.get(username=serializer.data['username'])
-        # Se genera el token para el nuevo usuario
+        user = serializer.save()
         token = Token.objects.create(user=user)
-        return Response({'token': token.key, "user": serializer.data}, status=status.HTTP_201_CREATED)
-    
+        return Response(
+            {"token": token.key, "user": UserSerializer(instance=user).data},
+            status=status.HTTP_201_CREATED,
+        )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-@authentication_classes([TokenAuthentication])
+@api_view(["POST"])
+def login(request):
+    """
+    Authenticates with username & password (+optional municipio check).
+    Returns: token + full user data.
+    """
+    username  = request.data.get("username")
+    password  = request.data.get("password")
+    municipio = request.data.get("municipio", "").upper()
+
+    try:
+        user = User.objects.get(username=username)
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=404)
+
+    if not user.check_password(password):
+        return Response({"error": "Invalid credentials"}, status=400)
+
+    # Optional municipality filter
+    allowed_muns = user.profile.get_municipios_list()
+    if municipio and municipio not in allowed_muns:
+        return Response({"error": "User has no access to this municipio"}, status=403)
+
+    token, _ = Token.objects.get_or_create(user=user)
+    return Response({"token": token.key, "user": UserSerializer(instance=user).data})
+
+@api_view(["GET"])                               # ← solo lectura
+@authentication_classes([MultiTokenAuthentication])   # ← token requerido
 @permission_classes([IsAuthenticated])
-def profile(request):
+def commondata(request):
     """
-    Retorna la información del usuario autenticado.
+    GET /commondata?username=<user>
+
+    Devuelve los registros de CommonData asociados al username
+    (event_user_name | create_user_name | last_edit_name).
+    El token se envía en el header:  Authorization: Token <token>.
     """
-    serializer = UserSerializer(instance=request.user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    username = request.query_params.get("username", "").strip()
+    if not username:
+        return Response({"error": "username query-param is required"}, status=400)
+
+    qs = CommonData.objects.filter(
+        Q(event_user_name=username) |
+        Q(create_user_name=username) |
+        Q(last_edit_name=username)
+    )
+    return Response(CommonDataSerializer(qs, many=True).data)
+# ----------------------------------------------------------------------
+@api_view(["POST"])                              # ← crear registro
+@authentication_classes([MultiTokenAuthentication])
+@permission_classes([IsAuthenticated])
+def commondata_create(request):
+    """
+    POST /commondata/create
+    Body JSON con TODOS los campos definidos en CommonDataModelSerializer.
+    El token es obligatorio.  Devuelve el registro insertado.
+    """
+    serializer = CommonDataSerializer(data=request.data)
+    if serializer.is_valid():
+        instance = serializer.save()             # inserta en la tabla
+        return Response(CommonDataSerializer(instance).data, status=201)
+    return Response(serializer.errors, status=400)

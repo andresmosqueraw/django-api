@@ -28,3 +28,6 @@ crear serializerpython manage.py showmigrations
 python manage.py makemigrations server
 
 
+
+
+Si solo cambio codigo python: docker compose restart web
