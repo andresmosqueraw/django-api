@@ -7,7 +7,7 @@ from django.db.models import Q
 from .models import CommonData
 from .serializers import CommonDataSerializer
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from server.authentication import MultiTokenAuthentication
 
 
@@ -30,6 +30,8 @@ def register(request):
 
 
 @api_view(["POST"])
+@authentication_classes([])  # Deshabilita la autenticación
+@permission_classes([AllowAny])  # Permite acceso sin autenticación
 def login(request):
     """
     Authenticates with username & password (+optional municipio check).
