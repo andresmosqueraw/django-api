@@ -12,6 +12,8 @@ from server.authentication import MultiTokenAuthentication
 
 
 @api_view(["POST"])
+@authentication_classes([])  # ← Desactiva autenticación
+@permission_classes([AllowAny])  # ← Permite acceso libre
 def register(request):
     """
     Create a user with: username, password, first_name, last_name, email,

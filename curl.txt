@@ -3,10 +3,13 @@ Register
 curl -X POST http://localhost:8081/register \
 -H "Content-Type: application/json" \
 -d '{
-    "username": "marcos",
-    "password": "123",
-    "email": "carlos@example.com",
-    "municipios": "CUITIVA, IZA, CUITIVA"
+  "username":   "mandres",
+  "password":   "123",
+  "first_name": "Andres",
+  "last_name":  "Mosquera",
+  "email":      "andres@example.com",
+  "municipios": ["CUITIVA", "IZA"],
+  "permissions": ["add_user", "view_user"]
 }'
 
 
@@ -15,9 +18,9 @@ Login
 curl -X POST http://localhost:8081/login \
 -H "Content-Type: application/json" \
 -d '{
-  "username":  "erikka2",
-  "password":  "S3curePass!",
-  "municipio": "CUITIVA"
+  "username":  "mandres",
+  "password":  "123",
+  "municipio": "CUITIVA"   // optional – verifies access
 }'
 
 Commondata create
@@ -34,9 +37,9 @@ curl -X POST http://localhost:8081/commondata/create \
   "capture_date":   "2025-04-30T14:25:00",
   "capture_x":      4.70012345,
   "capture_y":      -74.09098765,
-  "event_user_name":  "erikka2",
+  "event_user_name":  "mandres",
   "create_date":      "2025-04-30T14:25:00",
-  "create_user_name": "erikka2",
+  "create_user_name": "mandres",
   "event_date":       "2025-04-30T14:25:00",
   "event_x":          4.70012345,
   "event_y":          -74.09098765,
@@ -48,5 +51,5 @@ curl -X POST http://localhost:8081/commondata/create \
 
 Commondata get
 
-curl -X GET "http://localhost:8081/commondata?username=erikka2" \
+curl -X GET "http://localhost:8081/commondata?username=mandres" \
 -H "Authorization: Token 55b6bf0b90601ac015c9626ebca894c9d2dc61f2"
