@@ -20,17 +20,18 @@ curl -X POST http://localhost:8081/login \
 -d '{
   "username":  "mandres",
   "password":  "123",
-  "municipio": "CUITIVA"   // optional – verifies access
+  "municipio": "CUITIVA"
 }'
 
 Commondata create
 
 curl -X POST http://localhost:8081/commondata/create \
--H "Authorization: Token 55b6bf0b90601ac015c9626ebca894c9d2dc61f2" \
+-H "Authorization: Token 84b27f1100d51621d691918a317162498e4ebd3a" \
 -H "Content-Type: application/json" \
 -d '{
   "activity_name":  "Topography survey",
   "activity_code":  "SURV",
+  "id_search":      "m123",
   "address":        "Av. 68 #98-24",
   "city_code":      "15001",
   "city_desc":      "Bogotá",

@@ -28,6 +28,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 class CommonData(models.Model):
     activity_name    = models.CharField(max_length=1000)
     activity_code    = models.CharField(max_length=100)
+    id_search        = models.CharField(max_length=100)
     address          = models.CharField(max_length=1000)
     city_code        = models.CharField(max_length=100)
     city_desc        = models.CharField(max_length=1000)
